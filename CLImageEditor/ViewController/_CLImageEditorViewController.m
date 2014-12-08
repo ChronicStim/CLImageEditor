@@ -9,6 +9,8 @@
 
 #import "CLImageToolBase.h"
 
+#import "UIGlossyButton.h"
+#import "GeneralCategories.h"
 
 #pragma mark- _CLImageEditorViewController
 
@@ -83,14 +85,21 @@
     
     if(_navigationBar==nil){
         UINavigationItem *navigationItem  = [[UINavigationItem alloc] init];
-        navigationItem.leftBarButtonItem  = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(pushedCloseBtn:)];
-        navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(pushedFinishBtn:)];
+        
+        UIGlossyBarButtonItem *cancelButton = [UIGlossyBarButtonItem glossyBarButtonItemWithTitle:nil image:[UIImage imageNamed:@"iconCancel"] highlighted:NO forTarget:self selector:@selector(pushedCloseBtn:) forControlEvents:UIControlEventTouchUpInside];
+        [navigationItem setLeftBarButtonWithNegativeSpace:cancelButton];
+        
+        UIGlossyBarButtonItem *saveButton = [UIGlossyBarButtonItem glossyBarButtonItemWithTitle:nil image:[UIImage imageNamed:@"iconOK"] highlighted:NO forTarget:self selector:@selector(pushedFinishBtn:) forControlEvents:UIControlEventTouchUpInside];
+        [navigationItem setRightBarButtonWithNegativeSpace:saveButton];
         
         CGFloat dy = ([UIDevice iosVersion]<7) ? 0 : MIN([UIApplication sharedApplication].statusBarFrame.size.height, [UIApplication sharedApplication].statusBarFrame.size.width);
         
         UINavigationBar *navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0, dy, self.view.width, 44)];
         [navigationBar pushNavigationItem:navigationItem animated:NO];
-//        navigationBar.delegate = self;
+        navigationBar.barTintColor = [UIColor cptToolbarTintColor];
+        
+        NSDictionary *attributes = @{NSForegroundColorAttributeName : [UIColor whiteColor]};
+        navigationBar.titleTextAttributes = attributes;
         
         if(self.navigationController){
             [self.navigationController.view addSubview:navigationBar];
@@ -105,6 +114,15 @@
         _navigationBar.frame  = self.navigationController.navigationBar.frame;
         _navigationBar.hidden = YES;
         [_navigationBar popNavigationItemAnimated:NO];
+        
+        UIGlossyBarButtonItem *cancelButton = [UIGlossyBarButtonItem glossyBarButtonItemWithTitle:nil image:[UIImage imageNamed:@"iconCancel"] highlighted:NO forTarget:self selector:@selector(pushedCloseBtn:) forControlEvents:UIControlEventTouchUpInside];
+        [self.navigationItem setLeftBarButtonWithNegativeSpace:cancelButton];
+        
+        UIGlossyBarButtonItem *saveButton = [UIGlossyBarButtonItem glossyBarButtonItemWithTitle:nil image:[UIImage imageNamed:@"iconOK"] highlighted:NO forTarget:self selector:@selector(pushedFinishBtn:) forControlEvents:UIControlEventTouchUpInside];
+        [self.navigationItem setRightBarButtonWithNegativeSpace:saveButton];
+        
+        NSDictionary *attributes = @{NSForegroundColorAttributeName : [UIColor whiteColor]};
+        self.navigationController.navigationBar.titleTextAttributes = attributes;
     }
     else{
         _navigationBar.topItem.title = self.title;
@@ -133,26 +151,21 @@
 - (void)initImageScrollView
 {
     if(_scrollView==nil){
-        UIScrollView *imageScroll = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+        CGFloat x,y,w,h;
+        x = self.view.bounds.origin.x;
+        y = 0;
+        w = self.view.bounds.size.width;
+        h = self.view.bounds.size.height - y;
+        if (_menuView) {
+            h -= _menuView.bounds.size.height;
+        }
+        CGRect scrollViewRect = CGRectMake(x, y, w, h);
+        UIScrollView *imageScroll = [[UIScrollView alloc] initWithFrame:scrollViewRect];
         imageScroll.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         imageScroll.showsHorizontalScrollIndicator = NO;
         imageScroll.showsVerticalScrollIndicator = NO;
         imageScroll.delegate = self;
-        imageScroll.clipsToBounds = NO;
-        
-        CGFloat y = 0;
-        if(self.navigationController){
-            if(self.navigationController.navigationBar.translucent){
-                y = self.navigationController.navigationBar.bottom;
-            }
-            y = ([UIDevice iosVersion] < 7) ? y-[UIApplication sharedApplication].statusBarFrame.size.height : y;
-        }
-        else{
-            y = _navigationBar.bottom;
-        }
-        
-        imageScroll.top = y;
-        imageScroll.height = self.view.height - imageScroll.top - _menuView.height;
+        imageScroll.clipsToBounds = YES;
         
         [self.view insertSubview:imageScroll atIndex:0];
         _scrollView = imageScroll;
@@ -182,7 +195,7 @@
     self.title = self.toolInfo.title;
     self.view.clipsToBounds = YES;
     self.view.backgroundColor = self.theme.backgroundColor;
-    self.navigationController.view.backgroundColor = self.view.backgroundColor;
+//    self.navigationController.view.backgroundColor = self.view.backgroundColor;
     
     if([self respondsToSelector:@selector(automaticallyAdjustsScrollViewInsets)]){
         self.automaticallyAdjustsScrollViewInsets = NO;
@@ -240,10 +253,8 @@
 
 - (void)expropriateImageView
 {
-    UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
-    
     UIImageView *animateView = [UIImageView new];
-    [window addSubview:animateView];
+    [self.view addSubview:animateView];
     [self copyImageViewInfo:self.targetImageView toView:animateView];
     
     _bgView = [[UIView alloc] initWithFrame:self.view.bounds];
@@ -262,7 +273,7 @@
                      animations:^{
                          animateView.transform = CGAffineTransformIdentity;
                          
-                         CGFloat dy = ([UIDevice iosVersion]<7) ? [UIApplication sharedApplication].statusBarFrame.size.height : 0;
+                         CGFloat dy = [UIApplication sharedApplication].statusBarFrame.size.height;
                          
                          CGSize size = (_imageView.image) ? _imageView.image.size : _imageView.frame.size;
                          if(size.width>0 && size.height>0){
@@ -296,17 +307,15 @@
         [delegate imageEditor:self willDismissWithImageView:self.targetImageView canceled:canceled];
     }
     
-    UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
-    
     UIImageView *animateView = [UIImageView new];
-    [window addSubview:animateView];
+    [self.view addSubview:animateView];
     [self copyImageViewInfo:_imageView toView:animateView];
     
-    _menuView.frame = [window convertRect:_menuView.frame fromView:_menuView.superview];
-    _navigationBar.frame = [window convertRect:_navigationBar.frame fromView:_navigationBar.superview];
+    _menuView.frame = [self.view convertRect:_menuView.frame fromView:_menuView.superview];
+    _navigationBar.frame = [self.view convertRect:_navigationBar.frame fromView:_navigationBar.superview];
     
-    [window addSubview:_menuView];
-    [window addSubview:_navigationBar];
+    [self.view addSubview:_menuView];
+    [self.view addSubview:_navigationBar];
     
     self.view.userInteractionEnabled = NO;
     _menuView.userInteractionEnabled = NO;
@@ -543,10 +552,18 @@
     
     if(self.currentTool){
         UINavigationItem *item  = [[UINavigationItem alloc] initWithTitle:self.currentTool.toolInfo.title];
-        item.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringWithDefaultValue(@"CLImageEditor_OKBtnTitle", nil, [CLImageEditorTheme bundle], @"OK", @"") style:UIBarButtonItemStyleDone target:self action:@selector(pushedDoneBtn:)];
-        item.leftBarButtonItem  = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringWithDefaultValue(@"CLImageEditor_BackBtnTitle", nil, [CLImageEditorTheme bundle], @"Back", @"") style:UIBarButtonItemStylePlain target:self action:@selector(pushedCancelBtn:)];
+        
+        UIGlossyBarButtonItem *cancelButton = [UIGlossyBarButtonItem glossyBarButtonItemWithTitle:nil image:[UIImage imageNamed:@"iconCancel"] highlighted:NO forTarget:self selector:@selector(pushedCancelBtn:) forControlEvents:UIControlEventTouchUpInside];
+        [item setLeftBarButtonWithNegativeSpace:cancelButton];
+        
+        UIGlossyBarButtonItem *saveButton = [UIGlossyBarButtonItem glossyBarButtonItemWithTitle:nil image:[UIImage imageNamed:@"iconOK"] highlighted:NO forTarget:self selector:@selector(pushedDoneBtn:) forControlEvents:UIControlEventTouchUpInside];
+        [item setRightBarButtonWithNegativeSpace:saveButton];
         
         [_navigationBar pushNavigationItem:item animated:(self.navigationController==nil)];
+        
+        NSDictionary *attributes = @{NSForegroundColorAttributeName : [UIColor whiteColor]};
+        _navigationBar.titleTextAttributes = attributes;
+
     }
     else{
         [_navigationBar popNavigationItemAnimated:(self.navigationController==nil)];
