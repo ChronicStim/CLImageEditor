@@ -405,6 +405,11 @@
     return nil;
 }
 
++ (CLEditorTool)editorToolCode;
+{
+    return CLTool_Unknown;
+}
+
 #pragma mark- 
 
 - (void)setMenuView

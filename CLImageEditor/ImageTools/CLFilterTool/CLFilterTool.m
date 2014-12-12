@@ -29,7 +29,12 @@
 
 + (BOOL)isAvailable
 {
-    return ([UIDevice iosVersion] >= 5.0);
+    return ([UIDevice iosVersion] >= 5.0 && [self editorToolIsAvailable]);
+}
+
++ (CLEditorTool)editorToolCode;
+{
+    return CLTool_Filter;
 }
 
 - (void)setup

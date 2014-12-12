@@ -42,7 +42,12 @@
 
 + (BOOL)isAvailable
 {
-    return ([UIDevice iosVersion] >= 5.0);
+    return ([UIDevice iosVersion] >= 5.0 && [self editorToolIsAvailable]);
+}
+
++ (CLEditorTool)editorToolCode;
+{
+    return CLTool_Rotate;
 }
 
 - (void)setup

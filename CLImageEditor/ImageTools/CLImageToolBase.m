@@ -7,6 +7,12 @@
 
 #import "CLImageToolBase.h"
 
+@interface CLImageToolBase ()
+
+@property (nonatomic, weak) NSUserDefaults *defaults;
+
+@end
+
 @implementation CLImageToolBase
 
 - (id)initWithImageEditor:(_CLImageEditorViewController*)editor withToolInfo:(CLImageToolInfo*)info
@@ -30,13 +36,19 @@
     // Image tools are sorted according to the dockedNumber in tool bar.
     // Override point for tool bar customization
     NSArray *tools = @[
-                       @"CLFilterTool",
+                       @"CLClippingTool",
+                       @"CLRotateTool",
+                       @"CLResizeTool",
                        @"CLAdjustmentTool",
+                       @"CLFilterTool",
                        @"CLEffectTool",
                        @"CLBlurTool",
-                       @"CLRotateTool",
-                       @"CLClippingTool",
                        @"CLToneCurveTool",
+                       @"CLSplashTool",
+                       @"CLTextTool",
+                       @"CLDrawTool",
+                       @"CLStickerTool",
+                       @"CLEmoticonTool"
                        ];
     return [tools indexOfObject:NSStringFromClass(self)];
 }
@@ -61,6 +73,11 @@
     return nil;
 }
 
++ (CLEditorTool)editorToolCode;
+{
+    return CLTool_Unknown;
+}
+
 #pragma mark-
 
 - (void)setup
@@ -76,6 +93,68 @@
 - (void)executeWithCompletionBlock:(void(^)(UIImage *image, NSError *error, NSDictionary *userInfo))completionBlock
 {
     completionBlock(self.editor.imageView.image, nil, nil);
+}
+
+#pragma mark - Tool Availability
+
+-(NSUserDefaults *)defaults;
+{
+    return [NSUserDefaults standardUserDefaults];
+}
+
++(BOOL)editorToolIsAvailable;
+{
+    CLEditorTool editorTool = [[self class] editorToolCode];
+    NSString *key = [self preferenceKeyForEditorToolAvailability];
+    if (nil != [[NSUserDefaults standardUserDefaults] objectForKey:key]) {
+        //Default value exists and will be returned
+        return [[[NSUserDefaults standardUserDefaults] objectForKey:key] boolValue];
+    }
+    
+    // Default has not been set, so get default value and save to prefernces
+    BOOL initialAvailability = [self defaultAvailabilityForEditorTool:editorTool];
+    [self makeEditorToolAvailable:initialAvailability];
+    return initialAvailability;
+}
+
++(NSString *)preferenceKeyForEditorToolAvailability;
+{
+    NSString *key = [NSString stringWithFormat:@"CLEditorToolIsAvailable_%@",[[self class] defaultTitle]];
+    NSLog(@"%@",key);
+    return key;
+}
+
++(void)makeEditorToolAvailable:(BOOL)available;
+{
+    NSString *key = [self preferenceKeyForEditorToolAvailability];
+    [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:available] forKey:key];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
++(BOOL)defaultAvailabilityForEditorTool:(CLEditorTool)editorTool;
+{
+    BOOL defaultAvailability;
+    switch (editorTool) {
+        case CLTool_Adjustment:
+        case CLTool_Clipping:
+        case CLTool_Draw:
+        case CLTool_Emoticon:
+        case CLTool_Resize:
+        case CLTool_Rotate:
+        case CLTool_Sticker:
+        case CLTool_Text:
+            defaultAvailability = YES;
+            break;
+        case CLTool_Blur:
+        case CLTool_Effect:
+        case CLTool_Filter:
+        case CLTool_Splash:
+        case CLTool_ToneCurve:
+        default:
+            defaultAvailability = NO;
+            break;
+    }
+    return defaultAvailability;
 }
 
 @end

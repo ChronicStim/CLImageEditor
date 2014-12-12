@@ -70,12 +70,12 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 
 + (BOOL)isAvailable
 {
-    return ([UIDevice iosVersion] >= 5.0);
+    return ([UIDevice iosVersion] >= 5.0 && [self editorToolIsAvailable]);
 }
 
-+ (CGFloat)defaultDockedNumber
++ (CLEditorTool)editorToolCode;
 {
-    return 8;
+    return CLTool_Text;
 }
 
 #pragma mark- implementation

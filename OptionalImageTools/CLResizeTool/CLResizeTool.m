@@ -42,12 +42,12 @@ static NSString* const kCLResizeToolLimitSize = @"limitSize";
 
 + (BOOL)isAvailable
 {
-    return ([UIDevice iosVersion] >= 5.0);
+    return ([UIDevice iosVersion] >= 5.0 && [self editorToolIsAvailable]);
 }
 
-+ (CGFloat)defaultDockedNumber
++ (CLEditorTool)editorToolCode;
 {
-    return 5.5;
+    return CLTool_Resize;
 }
 
 #pragma mark- optional info

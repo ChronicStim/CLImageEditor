@@ -62,7 +62,12 @@ static NSString* const kCLClippingToolRatioTitleFormat = @"titleFormat";
 
 + (BOOL)isAvailable
 {
-    return YES;
+    return [self editorToolIsAvailable];
+}
+
++ (CLEditorTool)editorToolCode;
+{
+    return CLTool_Clipping;
 }
 
 #pragma mark- optional info

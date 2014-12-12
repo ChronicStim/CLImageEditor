@@ -42,12 +42,12 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
 
 + (BOOL)isAvailable
 {
-    return ([UIDevice iosVersion] >= 5.0);
+    return ([UIDevice iosVersion] >= 5.0 && [self editorToolIsAvailable]);
 }
 
-+ (CGFloat)defaultDockedNumber
++ (CLEditorTool)editorToolCode;
 {
-    return 7;
+    return CLTool_Emoticon;
 }
 
 #pragma mark- optional info

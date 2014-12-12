@@ -41,12 +41,12 @@ static NSString* const kCLStickerToolStickerPathKey = @"stickerPath";
 
 + (BOOL)isAvailable
 {
-    return ([UIDevice iosVersion] >= 5.0);
+    return ([UIDevice iosVersion] >= 5.0 && [self editorToolIsAvailable]);
 }
 
-+ (CGFloat)defaultDockedNumber
++ (CLEditorTool)editorToolCode;
 {
-    return 7;
+    return CLTool_Sticker;
 }
 
 #pragma mark- optional info

@@ -60,7 +60,12 @@ typedef NS_ENUM(NSUInteger, CLBlurType)
 
 + (BOOL)isAvailable
 {
-    return ([UIDevice iosVersion] >= 5.0);
+    return ([UIDevice iosVersion] >= 5.0 && [self editorToolIsAvailable]);
+}
+
++ (CLEditorTool)editorToolCode;
+{
+    return CLTool_Blur;
 }
 
 - (void)setup

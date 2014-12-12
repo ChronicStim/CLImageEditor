@@ -7,6 +7,23 @@
 
 #import <Foundation/Foundation.h>
 
+typedef enum {
+    CLTool_Unknown = 0,
+    CLTool_Adjustment,
+    CLTool_Blur,
+    CLTool_Clipping,
+    CLTool_Draw,
+    CLTool_Effect,
+    CLTool_Filter,
+    CLTool_Rotate,
+    CLTool_ToneCurve,
+    CLTool_Emoticon,
+    CLTool_Resize,
+    CLTool_Splash,
+    CLTool_Sticker,
+    CLTool_Text
+} CLEditorTool;
+
 @interface CLImageToolInfo : NSObject
 
 @property (nonatomic, readonly) NSString *toolName;

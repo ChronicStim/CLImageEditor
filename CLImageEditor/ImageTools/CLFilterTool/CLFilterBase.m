@@ -39,6 +39,11 @@
     return nil;
 }
 
++ (CLEditorTool)editorToolCode;
+{
+    return CLTool_Filter;
+}
+
 #pragma mark-
 
 + (UIImage*)applyFilter:(UIImage*)image

@@ -36,12 +36,12 @@
 
 + (BOOL)isAvailable
 {
-    return YES;
+    return [self editorToolIsAvailable];
 }
 
-+ (CGFloat)defaultDockedNumber
++ (CLEditorTool)editorToolCode;
 {
-    return 4.6;
+    return CLTool_Splash;
 }
 
 #pragma mark- implementation

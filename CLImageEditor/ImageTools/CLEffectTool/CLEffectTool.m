@@ -35,10 +35,15 @@
 
 + (BOOL)isAvailable
 {
-    return ([UIDevice iosVersion] >= 5.0);
+    return ([UIDevice iosVersion] >= 5.0 && [self editorToolIsAvailable]);
 }
 
-#pragma mark- 
++ (CLEditorTool)editorToolCode;
+{
+    return CLTool_Effect;
+}
+
+#pragma mark-
 
 - (void)setup
 {

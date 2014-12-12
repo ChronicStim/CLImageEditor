@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CLImageToolInfo.h"
 
 @protocol CLImageToolProtocol
 
@@ -16,5 +17,6 @@
 + (BOOL)isAvailable;
 + (NSArray*)subtools;
 + (NSDictionary*)optionalInfo;
++ (CLEditorTool)editorToolCode;
 
 @end

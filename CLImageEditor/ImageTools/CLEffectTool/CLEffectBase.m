@@ -53,6 +53,11 @@
     return nil;
 }
 
++ (CLEditorTool)editorToolCode;
+{
+    return CLTool_Unknown;
+}
+
 #pragma mark-
 
 - (id)initWithSuperView:(UIView*)superview imageViewFrame:(CGRect)frame toolInfo:(CLImageToolInfo*)info
