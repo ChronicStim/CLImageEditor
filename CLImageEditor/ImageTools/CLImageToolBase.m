@@ -119,7 +119,7 @@
 
 +(NSString *)preferenceKeyForEditorToolAvailability;
 {
-    NSString *key = [NSString stringWithFormat:@"CLEditorToolIsAvailable_%@",[[self class] defaultTitle]];
+    NSString *key = [NSString stringWithFormat:@"!Cloud_CLEditorToolIsAvailable_%@",[[self class] defaultTitle]];
     NSLog(@"%@",key);
     return key;
 }
