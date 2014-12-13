@@ -154,7 +154,7 @@ static NSString* const kCLStickerToolStickerPathKey = @"stickerPath";
     NSString *filePath = view.userInfo[@"filePath"];
     if(filePath){
         _CLStickerView *view = [[_CLStickerView alloc] initWithImage:[UIImage imageWithContentsOfFile:filePath]];
-        CGFloat ratio = MIN( (0.5 * _workingView.width) / view.width, (0.5 * _workingView.height) / view.height);
+        CGFloat ratio = MIN( (0.2 * _workingView.width) / view.width, (0.2 * _workingView.height) / view.height);
         [view setScale:ratio];
         view.center = CGPointMake(_workingView.width/2, _workingView.height/2);
         
