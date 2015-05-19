@@ -226,6 +226,8 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:animated];
+    
     if(self.targetImageView){
         [self expropriateImageView];
     }

@@ -132,7 +132,9 @@
 
 - (BOOL)resignFirstResponder
 {
-    return [_textView resignFirstResponder];
+    [_textView resignFirstResponder];
+    
+    return [super resignFirstResponder];
 }
 
 - (void)modeViewTapped:(UITapGestureRecognizer*)sender
