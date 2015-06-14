@@ -15,7 +15,13 @@
 {
     if(image==nil){  return nil; }
     
-    UIGraphicsBeginImageContext(image.size);
+    if ( UIGraphicsBeginImageContextWithOptions ) {
+        UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0);
+    }
+    else {
+        UIGraphicsBeginImageContext(image.size);
+    }
+    
     {
         [image drawAtPoint:CGPointMake(0, 0)];
         image = UIGraphicsGetImageFromCurrentImageContext();

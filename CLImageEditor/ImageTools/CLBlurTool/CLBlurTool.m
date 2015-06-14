@@ -284,7 +284,13 @@ typedef NS_ENUM(NSUInteger, CLBlurType)
 {
     UIImage *tmp = [image maskedImage:maskImage];
     
-    UIGraphicsBeginImageContext(blurImage.size);
+    if ( UIGraphicsBeginImageContextWithOptions ) {
+        UIGraphicsBeginImageContextWithOptions(blurImage.size, NO, 0.0);
+    }
+    else {
+        UIGraphicsBeginImageContext(blurImage.size);
+    }
+
     {
         [blurImage drawAtPoint:CGPointZero];
         [tmp drawInRect:CGRectMake(0, 0, blurImage.size.width, blurImage.size.height)];
@@ -305,7 +311,14 @@ typedef NS_ENUM(NSUInteger, CLBlurType)
     frame.origin.y *= ratio;
     
     UIImage *mask = [CLImageEditorTheme imageNamed:[self class] image:@"circle.png"];
-    UIGraphicsBeginImageContext(image.size);
+
+    if ( UIGraphicsBeginImageContextWithOptions ) {
+        UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0);
+    }
+    else {
+        UIGraphicsBeginImageContext(image.size);
+    }
+    
     {
         CGContextSetFillColorWithColor(UIGraphicsGetCurrentContext() , [[UIColor whiteColor] CGColor]);
         CGContextFillRect(UIGraphicsGetCurrentContext(), CGRectMake(0, 0, image.size.width, image.size.height));
@@ -321,7 +334,13 @@ typedef NS_ENUM(NSUInteger, CLBlurType)
 {
     UIImage *mask = [CLImageEditorTheme imageNamed:[self class] image:@"band.png"];
     
-    UIGraphicsBeginImageContext(image.size);
+    if ( UIGraphicsBeginImageContextWithOptions ) {
+        UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0);
+    }
+    else {
+        UIGraphicsBeginImageContext(image.size);
+    }
+    
     {
         CGContextRef context =  UIGraphicsGetCurrentContext();
         
