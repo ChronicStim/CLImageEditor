@@ -284,12 +284,7 @@ typedef NS_ENUM(NSUInteger, CLBlurType)
 {
     UIImage *tmp = [image maskedImage:maskImage];
     
-    if ( UIGraphicsBeginImageContextWithOptions ) {
-        UIGraphicsBeginImageContextWithOptions(blurImage.size, NO, 0.0);
-    }
-    else {
-        UIGraphicsBeginImageContext(blurImage.size);
-    }
+    UIGraphicsBeginImageContextWithOptions(blurImage.size, NO, 0.0);
 
     {
         [blurImage drawAtPoint:CGPointZero];
@@ -312,12 +307,7 @@ typedef NS_ENUM(NSUInteger, CLBlurType)
     
     UIImage *mask = [CLImageEditorTheme imageNamed:[self class] image:@"circle.png"];
 
-    if ( UIGraphicsBeginImageContextWithOptions ) {
-        UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0);
-    }
-    else {
-        UIGraphicsBeginImageContext(image.size);
-    }
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0);
     
     {
         CGContextSetFillColorWithColor(UIGraphicsGetCurrentContext() , [[UIColor whiteColor] CGColor]);
@@ -334,12 +324,7 @@ typedef NS_ENUM(NSUInteger, CLBlurType)
 {
     UIImage *mask = [CLImageEditorTheme imageNamed:[self class] image:@"band.png"];
     
-    if ( UIGraphicsBeginImageContextWithOptions ) {
-        UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0);
-    }
-    else {
-        UIGraphicsBeginImageContext(image.size);
-    }
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0);
     
     {
         CGContextRef context =  UIGraphicsGetCurrentContext();
