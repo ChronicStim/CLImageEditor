@@ -27,7 +27,6 @@ Pod::Spec.new do |s|
   
   s.subspec 'Dev' do |dev|
     dev.dependency 'CLImageEditor/Core'
-    dev.dependency 'UIGlossyButton', :git => 'https://github.com/ChronicStim/UIGlossyButton.git', :branch => 'CPT_version_4_0_x'
     dev.public_header_files = 'CLImageEditor/*/*.h', 'CLImageEditor/ImageTools/ToolSettings/*.h', 'CLImageEditor/ImageTools/CLFilterTool/CLFilterBase.h', 'CLImageEditor/ImageTools/CLEffectTool/CLEffectBase.h'
   end
   
