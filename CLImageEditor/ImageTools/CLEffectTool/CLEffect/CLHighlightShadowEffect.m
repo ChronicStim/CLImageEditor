@@ -22,7 +22,7 @@
 
 + (NSString*)defaultTitle
 {
-    return NSLocalizedStringWithDefaultValue(@"CLHighlightSadowEffect_DefaultTitle", nil, [CLImageEditorTheme bundle], @"Highlight", @"");
+    return [CLImageEditorTheme localizedString:@"CLHighlightSadowEffect_DefaultTitle" withDefault:@"Highlight"];
 }
 
 + (BOOL)isAvailable
@@ -56,11 +56,11 @@
     
     [filter setDefaults];
     //[filter setValue:[NSNumber numberWithFloat:_highlightSlider.value] forKey:@"inputHighlightAmount"];
-    [filter setValue:[NSNumber numberWithFloat:_shadowSlider.value] forKey:@"inputShadowAmount"];
+    [filter setValue:[self getShadowValue] forKey:@"inputShadowAmount"];
     //CGFloat R = MAX(image.size.width, image.size.height) * 0.02 * _radiusSlider.value;
     //[filter setValue:[NSNumber numberWithFloat:R] forKey:@"inputRadius"];
     
-    CIContext *context = [CIContext contextWithOptions:nil];
+    CIContext *context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer : @(NO)}];
     CIImage *outputImage = [filter outputImage];
     CGImageRef cgImage = [context createCGImage:outputImage fromRect:[outputImage extent]];
     
@@ -69,6 +69,16 @@
     CGImageRelease(cgImage);
     
     return result;
+}
+
+- (NSNumber*)getShadowValue
+{
+    __block NSNumber *value = nil;
+    
+    safe_dispatch_sync_main(^{
+        value = [NSNumber numberWithFloat:self->_shadowSlider.value];
+    });
+    return value;
 }
 
 #pragma mark-

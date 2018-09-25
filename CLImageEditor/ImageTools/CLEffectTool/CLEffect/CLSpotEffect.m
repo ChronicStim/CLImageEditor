@@ -34,7 +34,7 @@
 
 + (NSString*)defaultTitle
 {
-    return NSLocalizedStringWithDefaultValue(@"CLSpotEffect_DefaultTitle", nil, [CLImageEditorTheme bundle], @"Spot", @"");
+    return [CLImageEditorTheme localizedString:@"CLSpotEffect_DefaultTitle" withDefault:@"Spot"];
 }
 
 + (BOOL)isAvailable
@@ -75,7 +75,7 @@
     [filter setValue:vct forKey:@"inputCenter"];
     [filter setValue:[NSNumber numberWithFloat:R] forKey:@"inputRadius"];
     
-    CIContext *context = [CIContext contextWithOptions:nil];
+    CIContext *context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer : @(NO)}];
     CIImage *outputImage = [filter outputImage];
     CGImageRef cgImage = [context createCGImage:outputImage fromRect:[outputImage extent]];
     

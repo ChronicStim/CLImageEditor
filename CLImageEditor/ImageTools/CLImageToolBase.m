@@ -7,12 +7,6 @@
 
 #import "CLImageToolBase.h"
 
-@interface CLImageToolBase ()
-
-@property (nonatomic, weak) NSUserDefaults *defaults;
-
-@end
-
 @implementation CLImageToolBase
 
 - (id)initWithImageEditor:(_CLImageEditorViewController*)editor withToolInfo:(CLImageToolInfo*)info
@@ -28,7 +22,7 @@
 + (NSString*)defaultIconImagePath
 {
     CLImageEditorTheme *theme = [CLImageEditorTheme theme];
-    return [NSString stringWithFormat:@"%@.bundle/%@/%@/icon.png", [CLImageEditorTheme bundleName], NSStringFromClass([self class]), theme.toolIconColor];
+    return [NSString stringWithFormat:@"%@/%@/%@/icon.png", CLImageEditorTheme.bundle.bundlePath, NSStringFromClass([self class]), theme.toolIconColor];
 }
 
 + (CGFloat)defaultDockedNumber
@@ -154,6 +148,18 @@
             break;
     }
     return defaultAvailability;
+}
+
+- (UIImage*)imageForKey:(NSString*)key defaultImageName:(NSString*)defaultImageName
+{
+    NSString *iconName = self.toolInfo.optionalInfo[key];
+    
+    if(iconName.length>0){
+        return [UIImage imageNamed:iconName];
+    }
+    else{
+        return [CLImageEditorTheme imageNamed:[self class] image:defaultImageName];
+    }
 }
 
 @end

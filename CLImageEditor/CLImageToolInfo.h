@@ -24,6 +24,7 @@ typedef enum {
     CLTool_Text
 } CLEditorTool;
 
+#import <UIKit/UIKit.h>
 @interface CLImageToolInfo : NSObject
 
 @property (nonatomic, readonly) NSString *toolName;

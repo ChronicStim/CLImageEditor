@@ -11,11 +11,12 @@
 #import "CLCircleView.h"
 
 static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
+static NSString* const kCLEmoticonToolDeleteIconName = @"deleteIconAssetsName";
 
 @interface _CLEmoticonView : UIView
 + (void)setActiveEmoticonView:(_CLEmoticonView*)view;
 - (UIImageView*)imageView;
-- (id)initWithImage:(UIImage *)image;
+- (id)initWithImage:(UIImage *)image tool:(CLEmoticonTool*)tool;
 - (void)setScale:(CGFloat)scale;
 @end
 
@@ -37,7 +38,7 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
 
 + (NSString*)defaultTitle
 {
-    return NSLocalizedStringWithDefaultValue(@"CLEmoticonTool_DefaultTitle", nil, [CLImageEditorTheme bundle], @"Emoticons", @"");
+    return [CLImageEditorTheme localizedString:@"CLEmoticonTool_DefaultTitle" withDefault:@"Emoticons"];
 }
 
 + (BOOL)isAvailable
@@ -59,7 +60,10 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
 
 + (NSDictionary*)optionalInfo
 {
-    return @{kCLEmoticonToolEmoticonPathKey:[self defaultEmoticonPath]};
+    return @{
+             kCLEmoticonToolEmoticonPathKey:[self defaultEmoticonPath],
+             kCLEmoticonToolDeleteIconName:@"",
+             };
 }
 
 #pragma mark- implementation
@@ -84,7 +88,7 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
     _menuScroll.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuScroll.top);
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuScroll.transform = CGAffineTransformIdentity;
+                         self->_menuScroll.transform = CGAffineTransformIdentity;
                      }];
 }
 
@@ -96,10 +100,10 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
     
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuScroll.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuScroll.top);
+                         self->_menuScroll.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-self->_menuScroll.top);
                      }
                      completion:^(BOOL finished) {
-                         [_menuScroll removeFromSuperview];
+                         [self->_menuScroll removeFromSuperview];
                      }];
 }
 
@@ -108,7 +112,7 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
     [_CLEmoticonView setActiveEmoticonView:nil];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        UIImage *image = [self buildImage:_originalImage];
+        UIImage *image = [self buildImage:self->_originalImage];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             completionBlock(image, nil, nil);
@@ -153,7 +157,7 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
     
     NSString *filePath = view.userInfo[@"filePath"];
     if(filePath){
-        _CLEmoticonView *view = [[_CLEmoticonView alloc] initWithImage:[UIImage imageWithContentsOfFile:filePath]];
+        _CLEmoticonView *view = [[_CLEmoticonView alloc] initWithImage:[UIImage imageWithContentsOfFile:filePath] tool:self];
         CGFloat ratio = MIN( (0.5 * _workingView.width) / view.width, (0.5 * _workingView.height) / view.height);
         [view setScale:ratio];
         view.center = CGPointMake(_workingView.width/2, _workingView.height/2);
@@ -172,13 +176,20 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
 
 - (UIImage*)buildImage:(UIImage*)image
 {
-    UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0);
+    __block CALayer *layer = nil;
+    __block CGFloat scale = 1;
+    
+    safe_dispatch_sync_main(^{
+        scale = image.size.width / self->_workingView.width;
+        layer = self->_workingView.layer;
+    });
+    
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, image.scale);
     
     [image drawAtPoint:CGPointZero];
     
-    CGFloat scale = image.size.width / _workingView.width;
     CGContextScaleCTM(UIGraphicsGetCurrentContext(), scale, scale);
-    [_workingView.layer renderInContext:UIGraphicsGetCurrentContext()];
+    [layer renderInContext:UIGraphicsGetCurrentContext()];
     
     UIImage *tmp = UIGraphicsGetImageFromCurrentImageContext();
     
@@ -216,7 +227,7 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
     }
 }
 
-- (id)initWithImage:(UIImage *)image
+- (id)initWithImage:(UIImage *)image tool:(CLEmoticonTool*)tool
 {
     self = [super initWithFrame:CGRectMake(0, 0, image.size.width+32, image.size.height+32)];
     if(self){
@@ -228,7 +239,7 @@ static NSString* const kCLEmoticonToolEmoticonPathKey = @"EmoticonPath";
         
         _deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];
 		
-        [_deleteButton setImage:[CLImageEditorTheme imageNamed:[CLEmoticonTool class] image:@"btn_delete.png"] forState:UIControlStateNormal];
+        [_deleteButton setImage:[tool imageForKey:kCLEmoticonToolDeleteIconName defaultImageName:@"btn_delete.png"] forState:UIControlStateNormal];
         _deleteButton.frame = CGRectMake(0, 0, 32, 32);
         _deleteButton.center = _imageView.frame.origin;
         [_deleteButton addTarget:self action:@selector(pushedDeleteBtn:) forControlEvents:UIControlEventTouchUpInside];

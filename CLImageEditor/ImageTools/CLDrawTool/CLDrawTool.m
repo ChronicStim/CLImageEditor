@@ -7,6 +7,8 @@
 
 #import "CLDrawTool.h"
 
+static NSString* const kCLDrawToolEraserIconName = @"eraserIconAssetsName";
+
 @implementation CLDrawTool
 {
     UIImageView *_drawingView;
@@ -30,7 +32,7 @@
 
 + (NSString*)defaultTitle
 {
-    return NSLocalizedStringWithDefaultValue(@"CLDrawTool_DefaultTitle", nil, [CLImageEditorTheme bundle], @"Draw", @"");
+    return [CLImageEditorTheme localizedString:@"CLDrawTool_DefaultTitle" withDefault:@"Draw"];
 }
 
 + (BOOL)isAvailable
@@ -41,6 +43,15 @@
 + (CLEditorTool)editorToolCode;
 {
     return CLTool_Draw;
+}
+
+#pragma mark- optional info
+
++ (NSDictionary*)optionalInfo
+{
+    return @{
+             kCLDrawToolEraserIconName : @"",
+             };
 }
 
 #pragma mark- implementation
@@ -72,7 +83,7 @@
     _menuView.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuView.top);
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuView.transform = CGAffineTransformIdentity;
+                         self->_menuView.transform = CGAffineTransformIdentity;
                      }];
     
 }
@@ -85,17 +96,20 @@
     
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuView.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuView.top);
+                         self->_menuView.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-self->_menuView.top);
                      }
                      completion:^(BOOL finished) {
-                         [_menuView removeFromSuperview];
+                         [self->_menuView removeFromSuperview];
                      }];
 }
 
 - (void)executeWithCompletionBlock:(void (^)(UIImage *, NSError *, NSDictionary *))completionBlock
 {
+    UIImage *backgroundImage = self.editor.imageView.image;
+    UIImage *foregroundImage = _drawingView.image;
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        UIImage *image = [self buildImage];
+        UIImage *image = [self buildImageWithBackgroundImage:backgroundImage foregroundImage:foregroundImage];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             completionBlock(image, nil, nil);
@@ -240,7 +254,7 @@
     [_menuView insertSubview:_strokePreviewBackground aboveSubview:_strokePreview];
     
     _eraserIcon = [[UIImageView alloc] initWithFrame:_strokePreview.frame];
-    _eraserIcon.image  =  [CLImageEditorTheme imageNamed:[self class] image:@"btn_eraser.png"];
+    _eraserIcon.image  =  [self imageForKey:kCLDrawToolEraserIconName defaultImageName:@"btn_eraser.png"];
     _eraserIcon.hidden = YES;
     [_menuView addSubview:_eraserIcon];
     
@@ -322,12 +336,12 @@
     UIGraphicsEndImageContext();
 }
 
-- (UIImage*)buildImage
+- (UIImage*)buildImageWithBackgroundImage:(UIImage*)backgroundImage foregroundImage:(UIImage*)foregroundImage
 {
-    UIGraphicsBeginImageContextWithOptions(_originalImageSize, NO, 0.0);
+    UIGraphicsBeginImageContextWithOptions(_originalImageSize, NO, backgroundImage.scale);
     
-    [self.editor.imageView.image drawAtPoint:CGPointZero];
-    [_drawingView.image drawInRect:CGRectMake(0, 0, _originalImageSize.width, _originalImageSize.height)];
+    [backgroundImage drawAtPoint:CGPointZero];
+    [foregroundImage drawInRect:CGRectMake(0, 0, _originalImageSize.width, _originalImageSize.height)];
     
     UIImage *tmp = UIGraphicsGetImageFromCurrentImageContext();
     

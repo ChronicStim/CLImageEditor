@@ -7,6 +7,8 @@
 
 #import "CLSplashTool.h"
 
+static NSString* const kCLSplashToolEraserIconName = @"eraserIconAssetsName";
+
 @implementation CLSplashTool
 {
     UIImageView *_drawingView;
@@ -31,7 +33,7 @@
 
 + (NSString*)defaultTitle
 {
-    return NSLocalizedStringWithDefaultValue(@"CLSplashTool_DefaultTitle", nil, [CLImageEditorTheme bundle], @"Splash", @"");
+    return [CLImageEditorTheme localizedString:@"CLSplashTool_DefaultTitle" withDefault:@"Splash"];
 }
 
 + (BOOL)isAvailable
@@ -44,6 +46,15 @@
     return CLTool_Splash;
 }
 
+#pragma mark- optional info
+
++ (NSDictionary*)optionalInfo
+{
+    return @{
+             kCLSplashToolEraserIconName : @"",
+             };
+}
+
 #pragma mark- implementation
 
 - (void)setup
@@ -51,8 +62,9 @@
     _originalImageSize = self.editor.imageView.image.size;
     
     _drawingView = [[UIImageView alloc] initWithFrame:self.editor.imageView.bounds];
+    _drawingView.contentMode = UIViewContentModeScaleAspectFit;
     
-    _grayImage = [[self.editor.imageView.image resize:CGSizeMake(_drawingView.width*2, _drawingView.height*2)] grayScaleImage];
+    _grayImage = [[self.editor.imageView.image aspectFit:CGSizeMake(_drawingView.width*2, _drawingView.height*2)] grayScaleImage];
     _drawingView.image = _grayImage;
     
     UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(drawingViewDidPan:)];
@@ -76,7 +88,7 @@
     _menuView.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuView.top);
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuView.transform = CGAffineTransformIdentity;
+                         self->_menuView.transform = CGAffineTransformIdentity;
                      }];
 }
 
@@ -88,17 +100,19 @@
     
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuView.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuView.top);
+                         self->_menuView.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-self->_menuView.top);
                      }
                      completion:^(BOOL finished) {
-                         [_menuView removeFromSuperview];
+                         [self->_menuView removeFromSuperview];
                      }];
 }
 
 - (void)executeWithCompletionBlock:(void (^)(UIImage *, NSError *, NSDictionary *))completionBlock
 {
+    UIImage *backgroundImage = self.editor.imageView.image;
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        UIImage *image = [self buildImage];
+        UIImage *image = [self buildImageWithBackgroundImage:backgroundImage];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             completionBlock(image, nil, nil);
@@ -186,7 +200,7 @@
     _strokePreviewBackground.backgroundColor = _strokePreview.backgroundColor;
     
     _eraserIcon = [[UIImageView alloc] initWithFrame:_strokePreview.frame];
-    _eraserIcon.image  =  [CLImageEditorTheme imageNamed:[self class] image:@"btn_eraser.png"];
+    _eraserIcon.image  =  [self imageForKey:kCLSplashToolEraserIconName defaultImageName:@"btn_eraser.png"];
     _eraserIcon.hidden = YES;
     [_menuView addSubview:_eraserIcon];
     
@@ -258,13 +272,13 @@
     UIGraphicsEndImageContext();
 }
 
-- (UIImage*)buildImage
+- (UIImage*)buildImageWithBackgroundImage:(UIImage*)backgroundImage
 {
-    _grayImage = [self.editor.imageView.image grayScaleImage];
+    _grayImage = [backgroundImage grayScaleImage];
     
-    UIGraphicsBeginImageContextWithOptions(_originalImageSize, NO, self.editor.imageView.image.scale);
+    UIGraphicsBeginImageContextWithOptions(_originalImageSize, NO, backgroundImage.scale);
     
-    [self.editor.imageView.image drawAtPoint:CGPointZero];
+    [backgroundImage drawAtPoint:CGPointZero];
     [[_grayImage maskedImage:_maskImage] drawInRect:CGRectMake(0, 0, _originalImageSize.width, _originalImageSize.height)];
     
     UIImage *tmp = UIGraphicsGetImageFromCurrentImageContext();

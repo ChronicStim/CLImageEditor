@@ -17,6 +17,15 @@
 static NSString* const CLTextViewActiveViewDidChangeNotification = @"CLTextViewActiveViewDidChangeNotificationString";
 static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActiveViewDidTapNotificationString";
 
+static NSString* const kCLTextToolDeleteIconName = @"deleteIconAssetsName";
+static NSString* const kCLTextToolCloseIconName = @"closeIconAssetsName";
+static NSString* const kCLTextToolNewTextIconName = @"newTextIconAssetsName";
+static NSString* const kCLTextToolEditTextIconName = @"editTextIconAssetsName";
+static NSString* const kCLTextToolFontIconName = @"fontIconAssetsName";
+static NSString* const kCLTextToolAlignLeftIconName = @"alignLeftIconAssetsName";
+static NSString* const kCLTextToolAlignCenterIconName = @"alignCenterIconAssetsName";
+static NSString* const kCLTextToolAlignRightIconName = @"alignRightIconAssetsName";
+
 
 @interface _CLTextView : UIView
 @property (nonatomic, strong) NSString *text;
@@ -27,6 +36,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 @property (nonatomic, assign) NSTextAlignment textAlignment;
 
 + (void)setActiveTextView:(_CLTextView*)view;
+- (id)initWithTool:(CLTextTool*)tool;
 - (void)setScale:(CGFloat)scale;
 - (void)sizeToFitWithMaxWidth:(CGFloat)width lineHeight:(CGFloat)lineHeight;
 
@@ -65,7 +75,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 
 + (NSString*)defaultTitle
 {
-    return NSLocalizedStringWithDefaultValue(@"CLTextTool_DefaultTitle", nil, [CLImageEditorTheme bundle], @"Text", @"");
+    return [CLImageEditorTheme localizedString:@"CLTextTool_DefaultTitle" withDefault:@"Text"];
 }
 
 + (BOOL)isAvailable
@@ -76,6 +86,22 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 + (CLEditorTool)editorToolCode;
 {
     return CLTool_Text;
+}
+
+#pragma mark- optional info
+
++ (NSDictionary*)optionalInfo
+{
+    return @{
+             kCLTextToolDeleteIconName:@"",
+             kCLTextToolCloseIconName:@"",
+             kCLTextToolNewTextIconName:@"",
+             kCLTextToolEditTextIconName:@"",
+             kCLTextToolFontIconName:@"",
+             kCLTextToolAlignLeftIconName:@"",
+             kCLTextToolAlignCenterIconName:@"",
+             kCLTextToolAlignRightIconName:@"",
+             };
 }
 
 #pragma mark- implementation
@@ -108,7 +134,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     [self.editor.view addSubview:_settingView];
     
     UIButton *okButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [okButton setImage:[CLImageEditorTheme imageNamed:[self class] image:@"btn_delete.png"] forState:UIControlStateNormal];
+    [okButton setImage:[self imageForKey:kCLTextToolCloseIconName defaultImageName:@"btn_delete.png"] forState:UIControlStateNormal];
     okButton.frame = CGRectMake(_settingView.width-32, 0, 32, 32);
     [okButton addTarget:self action:@selector(pushedButton:) forControlEvents:UIControlEventTouchUpInside];
     [_settingView addSubview:okButton];
@@ -120,7 +146,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     _menuScroll.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuScroll.top);
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuScroll.transform = CGAffineTransformIdentity;
+                          self->_menuScroll.transform = CGAffineTransformIdentity;
                      }];
 }
 
@@ -136,10 +162,10 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuScroll.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuScroll.top);
+                         self->_menuScroll.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-self->_menuScroll.top);
                      }
                      completion:^(BOOL finished) {
-                         [_menuScroll removeFromSuperview];
+                         [self->_menuScroll removeFromSuperview];
                      }];
 }
 
@@ -148,7 +174,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     [_CLTextView setActiveTextView:nil];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        UIImage *image = [self buildImage:_originalImage];
+        UIImage *image = [self buildImage:self->_originalImage];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             completionBlock(image, nil, nil);
@@ -160,13 +186,20 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 
 - (UIImage*)buildImage:(UIImage*)image
 {
+    __block CALayer *layer = nil;
+    __block CGFloat scale = 1;
+    
+    safe_dispatch_sync_main(^{
+        scale = image.size.width / self->_workingView.width;
+        layer = self->_workingView.layer;
+    });
+    
     UIGraphicsBeginImageContextWithOptions(image.size, NO, image.scale);
     
     [image drawAtPoint:CGPointZero];
     
-    CGFloat scale = image.size.width / _workingView.width;
     CGContextScaleCTM(UIGraphicsGetCurrentContext(), scale, scale);
-    [_workingView.layer renderInContext:UIGraphicsGetCurrentContext()];
+    [layer renderInContext:UIGraphicsGetCurrentContext()];
     
     UIImage *tmp = UIGraphicsGetImageFromCurrentImageContext();
     
@@ -220,7 +253,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 
 - (void)activeTextViewDidTap:(NSNotification*)notification
 {
-    [self beginTextEditting];
+    [self beginTextEditing];
 }
 
 - (void)setMenu
@@ -230,24 +263,13 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     CGFloat x = 0;
     
     NSArray *_menu = @[
-                       @{@"title":NSLocalizedStringWithDefaultValue(@"CLTextTool_MenuItemNew", nil, [CLImageEditorTheme bundle], @"New", @""), @"icon":[CLImageEditorTheme imageNamed:[self class]
-																																												image:@"btn_add.png"]},
-					   
-                       @{@"title":NSLocalizedStringWithDefaultValue(@"CLTextTool_MenuItemText", nil, [CLImageEditorTheme bundle], @"Text", @""), @"icon":[CLImageEditorTheme imageNamed:[self class]
-																																												  image:@"icon.png"]},
-                       @{@"title":NSLocalizedStringWithDefaultValue(@"CLTextTool_MenuItemColor", nil, [CLImageEditorTheme bundle], @"Color", @"")},
-					   
-                       @{@"title":NSLocalizedStringWithDefaultValue(@"CLTextTool_MenuItemFont", nil, [CLImageEditorTheme bundle], @"Font", @""), @"icon":[CLImageEditorTheme imageNamed:[self class]
-																																												  image:@"btn_font.png"]},
-					   
-                       @{@"title":NSLocalizedStringWithDefaultValue(@"CLTextTool_MenuItemAlignLeft", nil, [CLImageEditorTheme bundle], @" ", @""), @"icon":[CLImageEditorTheme imageNamed:[self class]
-																																													image:@"btn_align_left.png"]},
-					   
-                       @{@"title":NSLocalizedStringWithDefaultValue(@"CLTextTool_MenuItemAlignCenter", nil, [CLImageEditorTheme bundle], @" ", @""), @"icon":[CLImageEditorTheme imageNamed:[self class]
-																																													  image:@"btn_align_center.png"]},
-					   
-                       @{@"title":NSLocalizedStringWithDefaultValue(@"CLTextTool_MenuItemAlignRight", nil, [CLImageEditorTheme bundle], @" ", @""), @"icon":[CLImageEditorTheme imageNamed:[self class]
-																																													 image:@"btn_align_right.png"]},
+                       @{@"title":[CLImageEditorTheme localizedString:@"CLTextTool_MenuItemNew" withDefault:@"New"], @"icon":[self imageForKey:kCLTextToolNewTextIconName defaultImageName:@"btn_add.png"]},
+                       @{@"title":[CLImageEditorTheme localizedString:@"CLTextTool_MenuItemText" withDefault:@"Text"], @"icon":[self imageForKey:kCLTextToolEditTextIconName defaultImageName:@"icon.png"]},
+                       @{@"title":[CLImageEditorTheme localizedString:@"CLTextTool_MenuItemColor" withDefault:@"Color"]},
+                       @{@"title":[CLImageEditorTheme localizedString:@"CLTextTool_MenuItemFont" withDefault:@"Font"], @"icon":[self imageForKey:kCLTextToolFontIconName defaultImageName:@"btn_font.png"]},
+                       @{@"title":[CLImageEditorTheme localizedString:@"CLTextTool_MenuItemAlignLeft" withDefault:@" "], @"icon":[self imageForKey:kCLTextToolAlignLeftIconName defaultImageName:@"btn_align_left.png"]},
+                       @{@"title":[CLImageEditorTheme localizedString:@"CLTextTool_MenuItemAlignCenter" withDefault:@" "], @"icon":[self imageForKey:kCLTextToolAlignCenterIconName defaultImageName:@"btn_align_center.png"]},
+                       @{@"title":[CLImageEditorTheme localizedString:@"CLTextTool_MenuItemAlignRight" withDefault:@" "], @"icon":[self imageForKey:kCLTextToolAlignRightIconName defaultImageName:@"btn_align_right.png"]},
                        ];
     
     NSInteger tag = 0;
@@ -320,7 +342,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 
 - (void)addNewText
 {
-    _CLTextView *view = [_CLTextView new];
+    _CLTextView *view = [[_CLTextView alloc] initWithTool:self];
     view.fillColor = _settingView.selectedFillColor;
     view.borderColor = _settingView.selectedBorderColor;
     view.borderWidth = _settingView.selectedBorderWidth;
@@ -333,7 +355,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     [_workingView addSubview:view];
     [_CLTextView setActiveTextView:view];
     
-    [self beginTextEditting];
+    [self beginTextEditing];
 }
 
 - (void)hideSettingView
@@ -353,7 +375,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     }
 }
 
-- (void)beginTextEditting
+- (void)beginTextEditing
 {
     [self showSettingViewWithMenuIndex:0];
     [_settingView becomeFirstResponder];
@@ -426,7 +448,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 
 
 
-
+const CGFloat MAX_FONT_SIZE = 50.0;
 
 
 #pragma mark- _CLTextView
@@ -460,18 +482,18 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     }
 }
 
-- (id)init
+- (id)initWithTool:(CLTextTool*)tool
 {
     self = [super initWithFrame:CGRectMake(0, 0, 132, 132)];
     if(self){
         _label = [[CLTextLabel alloc] init];
-		[_label setTextColor:[CLImageEditorTheme toolbarTextColor]];
+        [_label setTextColor:[CLImageEditorTheme toolbarTextColor]];
         _label.numberOfLines = 0;
         _label.backgroundColor = [UIColor clearColor];
         _label.layer.borderColor = [[UIColor blackColor] CGColor];
         _label.layer.cornerRadius = 3;
-        _label.font = [UIFont systemFontOfSize:200];
-        _label.minimumScaleFactor = 1/200.0;
+        _label.font = [UIFont systemFontOfSize:MAX_FONT_SIZE];
+        _label.minimumScaleFactor = 1/MAX_FONT_SIZE;
         _label.adjustsFontSizeToFitWidth = YES;
         _label.textAlignment = NSTextAlignmentCenter;
         self.text = @"";
@@ -482,7 +504,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
         self.frame = CGRectMake(0, 0, size.width + 32, size.height + 32);
         
         _deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [_deleteButton setImage:[CLImageEditorTheme imageNamed:[CLTextTool class] image:@"btn_delete.png"] forState:UIControlStateNormal];
+        [_deleteButton setImage:[tool imageForKey:kCLTextToolDeleteIconName defaultImageName:@"btn_delete.png"] forState:UIControlStateNormal];
         _deleteButton.frame = CGRectMake(0, 0, 32, 32);
         _deleteButton.center = _label.frame.origin;
         [_deleteButton addTarget:self action:@selector(pushedDeleteBtn:) forControlEvents:UIControlEventTouchUpInside];
@@ -541,7 +563,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     self.transform = CGAffineTransformIdentity;
     _label.transform = CGAffineTransformIdentity;
     
-    CGSize size = [_label sizeThatFits:CGSizeMake(width / (15/200.0), FLT_MAX)];
+    CGSize size = [_label sizeThatFits:CGSizeMake(width / (15/MAX_FONT_SIZE), FLT_MAX)];
     _label.frame = CGRectMake(16, 16, size.width, size.height);
     
     CGFloat viewW = (_label.width + 32);
@@ -606,7 +628,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 
 - (void)setFont:(UIFont *)font
 {
-    _label.font = [font fontWithSize:200];
+    _label.font = [font fontWithSize:MAX_FONT_SIZE];
 }
 
 - (UIFont*)font
@@ -628,7 +650,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
 {
     if(![text isEqualToString:_text]){
         _text = text;
-        _label.text = (_text.length>0) ? _text : NSLocalizedStringWithDefaultValue(@"CLTextTool_EmptyText", nil, [CLImageEditorTheme bundle], @"Text", @"");
+        _label.text = (_text.length>0) ? _text : [CLImageEditorTheme localizedString:@"CLTextTool_EmptyText" withDefault:@"Text"];
     }
 }
 
@@ -705,7 +727,7 @@ static NSString* const CLTextViewActiveViewDidTapNotification = @"CLTextViewActi
     CGFloat arg = atan2(p.y, p.x);
     
     _arg   = _initialArg + arg - tmpA;
-    [self setScale:MAX(_initialScale * R / tmpR, 15/200.0)];
+    [self setScale:MAX(_initialScale * R / tmpR, 15/MAX_FONT_SIZE)];
 }
 
 @end

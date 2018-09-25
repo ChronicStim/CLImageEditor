@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "_CLImageEditorViewController.h"
-#import "CLImageToolSettings.h"
+#import "../ViewController/_CLImageEditorViewController.h"
+#import "ToolSettings/CLImageToolSettings.h"
 
 
 static const CGFloat kCLImageToolAnimationDuration = 0.3;
@@ -30,5 +30,7 @@ static const CGFloat kCLImageToolFadeoutDuration   = 0.2;
 - (void)setup;
 - (void)cleanup;
 - (void)executeWithCompletionBlock:(void(^)(UIImage *image, NSError *error, NSDictionary *userInfo))completionBlock;
+
+- (UIImage*)imageForKey:(NSString*)key defaultImageName:(NSString*)defaultImageName;
 
 @end

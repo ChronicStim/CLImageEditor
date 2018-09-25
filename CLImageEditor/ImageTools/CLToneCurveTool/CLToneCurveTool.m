@@ -9,6 +9,9 @@
 
 #import "CLSplineInterpolator.h"
 
+static NSString* const kCLToneCurveToolArrowIconName = @"arrowIconAssetsName";
+static NSString* const kCLToneCurveToolResetIconName = @"resetIconAssetsName";
+
 
 @protocol CLToneCurveGridDelegate;
 
@@ -55,7 +58,7 @@
 
 + (NSString*)defaultTitle
 {
-    return NSLocalizedStringWithDefaultValue(@"CLToneCurveTool_DefaultTitle", nil, [CLImageEditorTheme bundle], @"ToneCurve", @"");
+    return [CLImageEditorTheme localizedString:@"CLToneCurveTool_DefaultTitle" withDefault:@"ToneCurve"];
 }
 
 + (BOOL)isAvailable
@@ -68,6 +71,18 @@
     return CLTool_ToneCurve;
 }
 
+#pragma mark- optional info
+
++ (NSDictionary*)optionalInfo
+{
+    return @{
+             kCLToneCurveToolArrowIconName : @"",
+             kCLToneCurveToolResetIconName : @"",
+             };
+}
+
+#pragma mark-
+
 - (void)setup
 {
     _originalImage = self.editor.imageView.image;
@@ -75,9 +90,16 @@
     
     self.editor.imageView.image = _thumbnailImage;
     
-    _menuContainer = [[UIView alloc] initWithFrame:CGRectMake(0, self.editor.view.height-280, self.editor.view.width, 280)];
+    _menuContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.editor.view.width, 280)];
     _menuContainer.backgroundColor = [UIColor colorWithWhite:1 alpha:0.6];
     [self.editor.view addSubview:_menuContainer];
+    
+    // Adjust for iPhone X
+    if (@available(iOS 11.0, *)) {
+        UIEdgeInsets theInsets = [UIApplication sharedApplication].keyWindow.rootViewController.view.safeAreaInsets;
+        _menuContainer.height += theInsets.bottom;
+    }
+    _menuContainer.bottom = self.editor.view.height;
     
     _tonecurveView = [[CLToneCurveView alloc] initWithSuperview:_menuContainer frame:CGRectMake(10, 20, _menuContainer.width-80, 240)];
     _tonecurveView.delegate = self;
@@ -91,20 +113,20 @@
     btn.frame = CGRectMake(_tonecurveView.right + 20, 15, 30, 30);
     [btn addTarget:self action:@selector(pushedHideBtn:) forControlEvents:UIControlEventTouchUpInside];
 	
-    [btn setImage:[CLImageEditorTheme imageNamed:[self class] image:@"btn_arrow.png"] forState:UIControlStateNormal];
+    [btn setImage:[self imageForKey:kCLToneCurveToolArrowIconName defaultImageName:@"btn_arrow.png"] forState:UIControlStateNormal];
     [_menuContainer addSubview:btn];
     
     btn = [UIButton buttonWithType:UIButtonTypeCustom];
     btn.frame = CGRectMake(_tonecurveView.right + 20, _tonecurveView.bottom - 30, 30, 30);
     [btn addTarget:self action:@selector(pushedResetBtn:) forControlEvents:UIControlEventTouchUpInside];
 	
-    [btn setImage:[CLImageEditorTheme imageNamed:[self class] image:@"btn_reset.png"] forState:UIControlStateNormal];
+    [btn setImage:[self imageForKey:kCLToneCurveToolResetIconName defaultImageName:@"btn_reset.png"] forState:UIControlStateNormal];
     [_menuContainer addSubview:btn];
     
     _menuContainer.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuContainer.top);
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuContainer.transform = CGAffineTransformIdentity;
+                         self->_menuContainer.transform = CGAffineTransformIdentity;
                      }];
 }
 
@@ -114,24 +136,24 @@
     
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         _menuContainer.transform = CGAffineTransformTranslate(_menuContainer.transform, 0, self.editor.view.height-_menuContainer.top);
+                         self->_menuContainer.transform = CGAffineTransformTranslate(self->_menuContainer.transform, 0, self.editor.view.height-self->_menuContainer.top);
                      }
                      completion:^(BOOL finished) {
-                         [_menuContainer removeFromSuperview];
+                         [self->_menuContainer removeFromSuperview];
                      }];
 }
 
 - (void)executeWithCompletionBlock:(void(^)(UIImage *image, NSError *error, NSDictionary *userInfo))completionBlock
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        _indicatorView = [CLImageEditorTheme indicatorView];
-        _indicatorView.center = self.editor.view.center;
-        [self.editor.view addSubview:_indicatorView];
-        [_indicatorView startAnimating];
+        self->_indicatorView = [CLImageEditorTheme indicatorView];
+        self->_indicatorView.center = self.editor.view.center;
+        [self.editor.view addSubview:self->_indicatorView];
+        [self->_indicatorView startAnimating];
     });
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        UIImage *image = [self filteredImage:_originalImage];
+        UIImage *image = [self filteredImage:self->_originalImage];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             completionBlock(image, nil, nil);
@@ -149,7 +171,7 @@
     inProgress = YES;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        UIImage *image = [self filteredImage:_thumbnailImage];
+        UIImage *image = [self filteredImage:self->_thumbnailImage];
         [self.editor.imageView performSelectorOnMainThread:@selector(setImage:) withObject:image waitUntilDone:NO];
         inProgress = NO;
     });
@@ -169,7 +191,7 @@
     [filter setValue:_tonecurveView.point3 forKey:@"inputPoint3"];
     [filter setValue:_tonecurveView.point4 forKey:@"inputPoint4"];
     
-    CIContext *context = [CIContext contextWithOptions:nil];
+    CIContext *context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer : @(NO)}];
     CIImage *outputImage = [filter outputImage];
     CGImageRef cgImage = [context createCGImage:outputImage fromRect:[outputImage extent]];
     
@@ -184,15 +206,15 @@
 {
     [UIView animateWithDuration:kCLImageToolAnimationDuration
                      animations:^{
-                         if(CGAffineTransformIsIdentity(_menuContainer.transform)){
-                             _menuContainer.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-_menuContainer.top-self.editor.menuView.height);
+                         if(CGAffineTransformIsIdentity(self->_menuContainer.transform)){
+                             self->_menuContainer.transform = CGAffineTransformMakeTranslation(0, self.editor.view.height-self->_menuContainer.top-self.editor.menuView.height);
                              sender.transform = CGAffineTransformMakeRotation(M_PI);
-                             _tonecurveView.userInteractionEnabled = NO;
+                             self->_tonecurveView.userInteractionEnabled = NO;
                          }
                          else{
-                             _menuContainer.transform = CGAffineTransformIdentity;
+                             self->_menuContainer.transform = CGAffineTransformIdentity;
                              sender.transform = CGAffineTransformIdentity;
-                             _tonecurveView.userInteractionEnabled = YES;
+                             self->_tonecurveView.userInteractionEnabled = YES;
                          }
                      }
      ];

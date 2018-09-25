@@ -19,7 +19,7 @@
 
 + (NSString*)defaultTitle
 {
-    return NSLocalizedStringWithDefaultValue(@"CLPosterizeEffect_DefaultTitle", nil, [CLImageEditorTheme bundle], @"Posterize", @"");
+    return [CLImageEditorTheme localizedString:@"CLPosterizeEffect_DefaultTitle" withDefault:@"Posterize"];
 }
 
 + (BOOL)isAvailable
@@ -52,9 +52,9 @@
     //NSLog(@"%@", [filter attributes]);
     
     [filter setDefaults];
-    [filter setValue:[NSNumber numberWithFloat:-_levelSlider.value] forKey:@"inputLevels"];
+    [filter setValue:[self getLevelValue] forKey:@"inputLevels"];
     
-    CIContext *context = [CIContext contextWithOptions:nil];
+    CIContext *context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer : @(NO)}];
     CIImage *outputImage = [filter outputImage];
     CGImageRef cgImage = [context createCGImage:outputImage fromRect:[outputImage extent]];
     
@@ -63,6 +63,16 @@
     CGImageRelease(cgImage);
     
     return result;
+}
+
+- (NSNumber*)getLevelValue
+{
+    __block NSNumber *value = nil;
+    
+    safe_dispatch_sync_main(^{
+        value = [NSNumber numberWithFloat:-self->_levelSlider.value];
+    });
+    return value;
 }
 
 #pragma mark-
