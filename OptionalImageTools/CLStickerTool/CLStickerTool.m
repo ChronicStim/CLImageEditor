@@ -15,7 +15,6 @@ static NSString* const kCLStickerToolDeleteIconName = @"deleteIconAssetsName";
 @interface _CLStickerView : UIView
 + (void)setActiveStickerView:(_CLStickerView*)view;
 - (UIImageView*)imageView;
-- (id)initWithImage:(UIImage *)image;
 - (id)initWithImage:(UIImage *)image tool:(CLStickerTool*)tool;
 - (void)setScale:(CGFloat)scale;
 @end
