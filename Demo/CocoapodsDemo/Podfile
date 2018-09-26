@@ -7,6 +7,6 @@ target 'CLImageEditorDemo' do
 
   # Pods for CLImageEditorDemo
 
-  pod 'CLImageEditor', :git => 'https://github.com/ChronicStim/CLImageEditor.git', :branch => 'CPT_version_4_0_x', :inhibit_warnings => true
+  pod 'CLImageEditor/AllTools', :git => 'https://github.com/ChronicStim/CLImageEditor.git', :branch => 'CPT_version_4_0_x', :inhibit_warnings => true
 
 end

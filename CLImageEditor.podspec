@@ -6,13 +6,13 @@ Pod::Spec.new do |s|
   s.summary      = "CLImageEditor provides basic image editing features to iPhone apps."
 
   s.homepage     = "https://github.com/yackle/CLImageEditor"
-  s.source       = { :git => "https://github.com/yackle/CLImageEditor.git", :tag => "v#{s.version}" }
+  s.source       = { :git => "https://github.com/ChronicStim/CLImageEditor.git", :branch => "CPT_version_4_0_x" }
 
   s.license      = { :type => 'MIT', :file => 'LICENSE' }
   s.author       = { "Sho Yakushiji" => "sho.yakushiji@gmail.com" }
 
 
-  s.platform     = :ios, '5.0'
+  s.platform     = :ios, '8.0'
   s.requires_arc = true
   s.frameworks   = 'CoreGraphics', 'CoreImage', 'Accelerate'
 
