@@ -20,7 +20,6 @@
 		AD85D68718457388003106A3 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD85D68618457388003106A3 /* Accelerate.framework */; };
 		AD85D68918457394003106A3 /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD85D68818457394003106A3 /* CoreImage.framework */; };
 		C5A2C3A40AEE37073F159E14 /* libPods-CLImageEditorDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 180A53B8D4993CE9878D23A1 /* libPods-CLImageEditorDemo.a */; };
-		CB715D064D7B46BEB36E2F1A /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 131D1ADE730948FDBF5013AB /* libPods.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,7 +58,6 @@
 				AD5C1E0618350DC400790989 /* CoreGraphics.framework in Frameworks */,
 				AD5C1E0818350DC400790989 /* UIKit.framework in Frameworks */,
 				AD5C1E0418350DC400790989 /* Foundation.framework in Frameworks */,
-				CB715D064D7B46BEB36E2F1A /* libPods.a in Frameworks */,
 				C5A2C3A40AEE37073F159E14 /* libPods-CLImageEditorDemo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -147,7 +145,6 @@
 				AD5C1DFC18350DC400790989 /* Sources */,
 				AD5C1DFD18350DC400790989 /* Frameworks */,
 				AD5C1DFE18350DC400790989 /* Resources */,
-				C26CE378EBDC4B47BB64EC42 /* Copy Pods Resources */,
 				31D31D84257FD66EA8CC55DB /* [CP] Embed Pods Frameworks */,
 				E491DED8ED6207462D412B79 /* [CP] Copy Pods Resources */,
 			);
@@ -236,21 +233,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		C26CE378EBDC4B47BB64EC42 /* Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		DCB881FAFEEF25D98661DDA0 /* [CP] Check Pods Manifest.lock */ = {
