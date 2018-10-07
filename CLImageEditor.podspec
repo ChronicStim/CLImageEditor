@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'Core' do |core|
     core.source_files  = 'CLImageEditor/*.{h,m,mm}', 'CLImageEditor/**/*.{h,m,mm}'
-    core.public_header_files = 'CLImageEditor/*.h'
+    core.public_header_files = 'CLImageEditor/*.h', 'CLImageEditor/Utils/*.h'
     core.resources = "CLImageEditor/*.bundle"
   end
 
